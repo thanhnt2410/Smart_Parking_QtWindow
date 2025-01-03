@@ -1,2 +1,2 @@
 # Bỏ qua toàn bộ thư mục site-packages
-smart_park/Lib/site-packages/
+./smart_park
