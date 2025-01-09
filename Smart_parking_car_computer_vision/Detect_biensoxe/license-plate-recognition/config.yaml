@@ -1,0 +1,10 @@
+mqtt_username: "smartpark"
+mqtt_password: "Smartpark123"
+mqtt_sub_topic: "esp32/slots"
+mqtt_rfid_topic: "esp32/rfid"
+mqtt_rfid_send_in: "esp32/rfid_send_in"
+mqtt_rfid_send_out: "esp32/rfid_send_out"
+mqtt_open_door_in: "esp32/open_door_in"
+mqtt_open_door_out: "esp32/open_door_out"
+mqtt_host: "052e06039773482e81b963e2a3b42fba.s1.eu.hivemq.cloud"
+mqtt_port: 8883

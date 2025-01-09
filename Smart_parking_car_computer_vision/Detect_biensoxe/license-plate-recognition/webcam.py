@@ -8,18 +8,19 @@ import os
 import time
 import argparse
 import function.helper as helper
-from mqtt_handler import MQTTHandler
+# from mqtt_handler import MQTTHandler
 
 # # Khởi tạo MQTT Handler
 # mqtt_handler = MQTTHandler(port=1883, topic="license_plate/detection")
-mqtt_broke = "192.168.1.14"
-mqtt_port=1883
-mqtt_topic="esp32/slots"
+# mqtt_broke = "192.168.1.14"
+# mqtt_port=1883
+# mqtt_topic="esp32/slots"
 
 class DetectLicensePlate:
-    def __init__(self, camera_index=0, mqtt_broke = mqtt_broke, mqtt_port=mqtt_port, mqtt_topic=mqtt_topic):
+    def __init__(self, camera_index=0):
         self.camera_index = camera_index
-        self.mqtt_handler = MQTTHandler(broke=mqtt_broke, port=mqtt_port, topic=mqtt_topic)
+        # self.mqtt_handler = MQTTHandler()
+        # self.mqtt_handler.start()
 
         # Load models
         self.yolo_LP_detect = torch.hub.load('yolov5', 'custom', path='model/LP_detector_nano_61.pt', 
