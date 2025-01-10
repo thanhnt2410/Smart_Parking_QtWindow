@@ -180,7 +180,7 @@ class ParkingApp(QMainWindow):
                 # Tạo QLabel để hiển thị trạng thái slot
                 spot_label = QLabel()
                 spot_label.setFixedSize(100, 100)
-                spot_label.setStyleSheet("border: 1px solid black; background-color: lightgray;")
+                spot_label.setStyleSheet("border: 1px solid black; background-color: green;")
 
                 # Tạo một widget container
                 container_widget = QWidget()
@@ -278,9 +278,9 @@ class ParkingApp(QMainWindow):
 
         # Kiểm tra tình trạng cháy
         if status == 0:  # Có xe
-            spot_label.setStyleSheet("background-color: green; border: 1px solid black;")
+            spot_label.setStyleSheet("background-color: red; border: 1px solid black;")
         else:  # Không có cháy
-            spot_label.setStyleSheet("background-color: grey; border: 1px solid black;")
+            spot_label.setStyleSheet("background-color: green; border: 1px solid black;")
 
 
     def open_rfid_window(self):
