@@ -4,7 +4,7 @@
 ![image](https://github.com/user-attachments/assets/4c69eafb-4bdb-4321-b538-a65bf50fc49f)
 
 <h2>Giao diện Doanh Thu</h2>
-![image](https://github.com/user-attachments/assets/cdadd3ba-46f3-468c-9ee1-f7b7245dbc23)   
+
 
    ![image](https://github.com/user-attachments/assets/142213c8-6856-45f8-830f-ed4b63708c13)
 
