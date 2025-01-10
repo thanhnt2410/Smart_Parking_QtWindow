@@ -10,4 +10,7 @@
 
 
    ![image](https://github.com/user-attachments/assets/142213c8-6856-45f8-830f-ed4b63708c13)
+<h2>Giao diện quản lý thẻ</h2>
+
+![image](https://github.com/user-attachments/assets/02fdfae0-790f-4709-acb1-a7016589f3d7)
 
