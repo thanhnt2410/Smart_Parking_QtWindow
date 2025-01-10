@@ -14,3 +14,6 @@
 
 ![image](https://github.com/user-attachments/assets/02fdfae0-790f-4709-acb1-a7016589f3d7)
 
+<h2>Mô hình bãi đỗ xe</h2>
+
+   ![image](https://github.com/user-attachments/assets/8bbe46ea-b6cb-40ed-b1d6-70cbfdb76b75)
