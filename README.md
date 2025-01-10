@@ -3,6 +3,9 @@
 
 ![image](https://github.com/user-attachments/assets/4c69eafb-4bdb-4321-b538-a65bf50fc49f)
 
+![image](https://github.com/user-attachments/assets/5df5cfe1-76ed-4d21-8354-618fa153ff5a)
+
+
 <h2>Giao diện Doanh Thu</h2>
 
 
