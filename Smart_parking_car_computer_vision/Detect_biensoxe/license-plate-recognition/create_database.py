@@ -14,7 +14,7 @@ class RFIDList(Base):
 
     # Quan hệ với bảng MonthlyCards và DailyCards
     monthly_card = relationship("MonthlyCards", back_populates="rfid_info", uselist=False)
-    daily_card = relationship("DailyCards", back_populates="rfid_info", uselist=False)
+    # daily_card = relationship("DailyCards", back_populates="rfid_info", uselist=False)
 
 # Bảng 2: Thẻ tháng
 class MonthlyCards(Base):
@@ -32,13 +32,17 @@ class DailyCards(Base):
     __tablename__ = 'daily_cards'
 
     id = Column(Integer, primary_key=True, autoincrement=True)  # ID tự động tăng, làm khóa chính
-    rfid_card = Column(String(255), ForeignKey('rfid_list.rfid_card'), nullable=False)  # Không còn là khóa chính
+    rfid_card = Column(String(255), nullable=False)  # Không còn là khóa chính
     bien_so_xe = Column(String(255), nullable=True)    # Biển số xe
     time_in = Column(DateTime, nullable=True)          # Thời gian vào
     time_out = Column(DateTime, nullable=True)         # Thời gian ra
+    # Các cột mới
+    tien = Column(Integer, nullable=True, default=0)   # Số tiền (float, giá trị mặc định là 0.0)
+    img_in = Column(String(255), nullable=True)        # Đường dẫn hoặc tên file ảnh vào
+    img_out = Column(String(255), nullable=True)       # Đường dẫn hoặc tên file ảnh ra
 
-    # Quan hệ với bảng RFIDList
-    rfid_info = relationship("RFIDList", back_populates="daily_card")
+    # # Quan hệ với bảng RFIDList
+    # rfid_info = relationship("RFIDList", back_populates="daily_card")
 
 # Kết nối đến SQLite Database
 DATABASE_URL = "sqlite:///E:/AVR/CV/Project/Smart_Parking_Car_DATN/rfid_management.db"

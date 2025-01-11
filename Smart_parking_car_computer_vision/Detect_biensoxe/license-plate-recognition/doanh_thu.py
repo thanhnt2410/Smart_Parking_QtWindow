@@ -116,58 +116,6 @@ class DoanhThu(QWidget):
                 })
             return records
 
-    # def update_table(self):
-    #     self.table.setRowCount(0)
-    #     total_revenue = 0
-
-    #     # Lấy ngày từ widget
-    #     start_date = self.start_date_edit.date().toPyDate()
-    #     end_date = self.end_date_edit.date().toPyDate()
-
-    #     # Lấy dữ liệu từ database trong khoảng thời gian
-    #     records = self.get_filtered_records(start_date, end_date)
-        
-    #     for row, record in enumerate(records):
-    #         self.table.insertRow(row)
-            
-    #         if record['time_in']:
-    #             entry_time = datetime.strptime(record['time_in'], "%Y-%m-%d %H:%M:%S")
-            
-    #             if record['time_out']:
-    #                 exit_time = datetime.strptime(record['time_out'], "%Y-%m-%d %H:%M:%S")
-                    
-    #                 # Gọi hàm calculate_fee với entry_time và exit_time
-    #                 fee = self.calculate_fee(entry_time, exit_time)
-                    
-    #                 total_revenue += fee
-                    
-    #                 # Tính duration và chuyển đổi thành chuỗi
-    #                 duration = exit_time - entry_time
-    #                 hours = duration.total_seconds() / 3600
-    #                 duration_str = f"{int(hours)} hours {int((hours % 1) * 60)} min"
-    #                 fee_str = f"{fee:,} VND"
-    #                 exit_time_str = exit_time.strftime("%Y-%m-%d %H:%M:%S")
-    #             else:
-    #                 duration_str = "In Progress"
-    #                 fee_str = "Pending"
-    #                 exit_time_str = "Not Exit"
-
-    #             items = [
-    #                 record['rfid'],
-    #                 record['license_plate'],
-    #                 entry_time.strftime("%Y-%m-%d %H:%M:%S"),
-    #                 exit_time_str,
-    #                 duration_str,
-    #                 fee_str
-    #             ]
-                
-    #             for col, item in enumerate(items):
-    #                 table_item = QTableWidgetItem(str(item))
-    #                 table_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-    #                 self.table.setItem(row, col, table_item)
-
-    #     # Cập nhật tổng doanh thu
-    #     self.total_revenue_label.setText(f"Total Revenue: {total_revenue:,} VND")
 
     def get_filtered_records(self, start_date, end_date):
         """Lấy dữ liệu từ bảng daily_cards dựa trên thời gian xe ra trong khoảng được chọn"""
@@ -241,70 +189,6 @@ class DoanhThu(QWidget):
             f"Total Completed Vehicles: {completed_vehicles}"
         )
         self.total_revenue_label.setText(f"Total Revenue: {total_revenue:,} VND")
-    # def update_table(self):
-    #     self.table.setRowCount(0)
-    #     total_revenue = 0
-    #     total_vehicles = 0
-    #     completed_vehicles = 0
-
-    #     # Lấy ngày từ widget
-    #     start_date = self.start_date_edit.date().toPyDate()
-    #     end_date = self.end_date_edit.date().toPyDate() + timedelta(days=1)
-
-    #     # Cập nhật label hiển thị khoảng thời gian
-    #     self.date_range_label.setText(
-    #         f"Report Period: {start_date.strftime('%d/%m/%Y')} - {end_date.strftime('%d/%m/%Y')}"
-    #     )
-
-    #     # Lấy dữ liệu từ database trong khoảng thời gian
-    #     records = self.get_filtered_records(start_date, end_date)
-    #     total_vehicles = len(records)
-        
-    #     for row, record in enumerate(records):
-    #         self.table.insertRow(row)
-            
-    #         if record['time_in']:
-    #             entry_time = datetime.strptime(record['time_in'], "%Y-%m-%d %H:%M:%S")
-            
-    #             if record['time_out']:
-    #                 exit_time = datetime.strptime(record['time_out'], "%Y-%m-%d %H:%M:%S")
-    #                 completed_vehicles += 1
-                    
-    #                 # Gọi hàm calculate_fee với entry_time và exit_time
-    #                 fee = self.calculate_fee(entry_time, exit_time)
-                    
-    #                 total_revenue += fee
-                    
-    #                 # Tính duration và chuyển đổi thành chuỗi
-    #                 duration = exit_time - entry_time
-    #                 hours = duration.total_seconds() / 3600
-    #                 duration_str = f"{int(hours)} hours {int((hours % 1) * 60)} min"
-    #                 fee_str = f"{fee:,} VND"
-    #                 exit_time_str = exit_time.strftime("%Y-%m-%d %H:%M:%S")
-    #             else:
-    #                 duration_str = "In Progress"
-    #                 fee_str = "Pending"
-    #                 exit_time_str = "Not Exit"
-
-    #             items = [
-    #                 record['rfid'],
-    #                 record['license_plate'],
-    #                 entry_time.strftime("%Y-%m-%d %H:%M:%S"),
-    #                 exit_time_str,
-    #                 duration_str,
-    #                 fee_str
-    #             ]
-                
-    #             for col, item in enumerate(items):
-    #                 table_item = QTableWidgetItem(str(item))
-    #                 table_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-    #                 self.table.setItem(row, col, table_item)
-
-    #     # Cập nhật các label thống kê
-    #     self.total_vehicles_label.setText(
-    #         f"Total Vehicles: {total_vehicles} (Completed: {completed_vehicles}, In Progress: {total_vehicles - completed_vehicles})"
-    #     )
-    #     self.total_revenue_label.setText(f"Total Revenue: {total_revenue:,} VND")
 
     def export_to_excel(self):
         """Xuất dữ liệu từ bảng sang file Excel"""

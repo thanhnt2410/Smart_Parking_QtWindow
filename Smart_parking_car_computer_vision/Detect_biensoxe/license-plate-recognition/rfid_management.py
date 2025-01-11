@@ -13,7 +13,7 @@ class RFIDManagementWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("RFID Management")
+        self.setWindowTitle("Quản lý vé xe")
         self.setGeometry(150, 150, 800, 400)  # Điều chỉnh kích thước cửa sổ
 
         # Sử dụng QGridLayout
@@ -30,48 +30,49 @@ class RFIDManagementWindow(QMainWindow):
         self.plate_input = QLineEdit()
         self.card_type = QLineEdit()
 
-        self.daily_ticket_manager = DailyTicketManager(session)
+        # Table to display users
+        self.user_table = QTableWidget()
+        self.user_table.setColumnCount(3)
+        self.user_table.setHorizontalHeaderLabels(["Thẻ RFID", "Tên", "Biển số xe"])
+        self.layout.addWidget(self.user_table, 4, 0, 1, 2)  # Chiếm 2 cột
 
-        self.form_layout.addRow("RFID Code:", self.rfid_input)
-        self.form_layout.addRow("Name:", self.name_input)
-        self.form_layout.addRow("License Plate:", self.plate_input)
-        self.form_layout.addRow("Card Type:", self.card_type)
+        self.daily_ticket_manager = DailyTicketManager(session, self.user_table)
+
+        self.form_layout.addRow("Mã thẻ RFID:", self.rfid_input)
+        self.form_layout.addRow("Họ và tên:", self.name_input)
+        self.form_layout.addRow("Biển số xe:", self.plate_input)
+        self.form_layout.addRow("Loại vé:", self.card_type)
 
         # Thêm form vào layout
         self.layout.addLayout(self.form_layout, 0, 0, 1, 2)  # Chiếm 2 cột
 
         # Tạo các nút
-        self.add_user_button = QPushButton("Add New User")
+        self.add_user_button = QPushButton("Thêm mới người dùng tháng")
         self.add_user_button.clicked.connect(self.add_new_user)
 
-        self.add_card_button = QPushButton("Add New RFID Card")
+        self.add_card_button = QPushButton("Thêm mới thẻ RFID")
         self.add_card_button.clicked.connect(self.add_new_rfid_card)
 
-        self.remove_card_button = QPushButton("Remove Selected User")
-        self.remove_card_button.clicked.connect(self.remove_selected_user)
-
-        self.list_monthly_users_button = QPushButton("List Users Monthly")
+        self.list_monthly_users_button = QPushButton("Danh sách người dùng tháng")
         self.list_monthly_users_button.clicked.connect(self.list_all_users)
 
-        self.list_daily_users_button = QPushButton("List Users Daily")
+
+        self.list_daily_users_button = QPushButton("Danh sách vào ra vé ngày")
         self.list_daily_users_button.clicked.connect(self.list_daily_tickets)
 
-        self.list_rfid_button = QPushButton("List RFID Cards")
+        self.remove_card_button = QPushButton("Xoá người dùng")
+        self.remove_card_button.clicked.connect(self.remove_selected_user)
+
+        self.list_rfid_button = QPushButton("Danh sách thẻ RFID")
         self.list_rfid_button.clicked.connect(self.list_rfid_cards)  # Thêm hàm mới
 
         # Sắp xếp các nút thành 2 cột
         self.layout.addWidget(self.add_user_button, 1, 0)
         self.layout.addWidget(self.add_card_button, 1, 1)
-        self.layout.addWidget(self.remove_card_button, 2, 0)
-        self.layout.addWidget(self.list_monthly_users_button, 2, 1)
-        self.layout.addWidget(self.list_daily_users_button, 3, 0)
+        self.layout.addWidget(self.remove_card_button, 3, 0)
+        self.layout.addWidget(self.list_monthly_users_button, 2, 0)
+        self.layout.addWidget(self.list_daily_users_button, 2, 1)
         self.layout.addWidget(self.list_rfid_button, 3, 1)
-
-        # Table to display users
-        self.user_table = QTableWidget()
-        self.user_table.setColumnCount(3)
-        self.user_table.setHorizontalHeaderLabels(["RFID Code", "Name", "License Plate"])
-        self.layout.addWidget(self.user_table, 4, 0, 1, 2)  # Chiếm 2 cột
 
 
     def add_new_user(self):
@@ -82,7 +83,6 @@ class RFIDManagementWindow(QMainWindow):
 
         if rfid and name and license_plate:
             try:
-                # ticket_type_bool = ticket_type.lower() == 'true'
                 new_user = MonthlyCards(user_name=name, bien_so_xe=license_plate, rfid_card=rfid)
                 session.add(new_user)
                 session.commit()
@@ -104,7 +104,6 @@ class RFIDManagementWindow(QMainWindow):
 
         if rfid and card_type:
             try:
-                # ticket_type_bool = ticket_type.lower() == 'true'
                 new_user = RFIDList(rfid_card=rfid, card_type=card_type)
                 session.add(new_user)
                 session.commit()
@@ -118,16 +117,41 @@ class RFIDManagementWindow(QMainWindow):
         else:
             print("Please fill in all fields.")
 
+    # def remove_selected_user(self):
+    #     selected_row = self.user_table.currentRow()
+    #     if selected_row != -1:
+    #         rfid = self.user_table.item(selected_row, 0).text()
+    #         user = session.query(MonthlyCards).filter_by(rfid_card=rfid).first()
+    #         if user:
+    #             session.delete(user)
+    #             session.commit()
+    #             print(f"User with RFID {rfid} removed successfully.")
+    #             self.list_all_users()
+    #         else:
+    #             print("Selected user not found in the database.")
+    #     else:
+    #         print("Please select a user to remove.")
     def remove_selected_user(self):
         selected_row = self.user_table.currentRow()
         if selected_row != -1:
             rfid = self.user_table.item(selected_row, 0).text()
-            user = session.query(MonthlyCards).filter_by(rfid_card=rfid).first()
-            if user:
-                session.delete(user)
+            
+            # Check and delete from MonthlyCards if exists
+            user_monthly = session.query(MonthlyCards).filter_by(rfid_card=rfid).first()
+            if user_monthly:
+                session.delete(user_monthly)
+                self.list_all_users()
+                
+            # Check and delete from RFIDList if exists
+            user_rfid = session.query(RFIDList).filter_by(rfid_card=rfid).first()
+            if user_rfid:
+                session.delete(user_rfid)
+                self.list_rfid_cards()
+                
+            # Commit changes only if any deletion occurred
+            if user_monthly or user_rfid:
                 session.commit()
                 print(f"User with RFID {rfid} removed successfully.")
-                self.list_all_users()
             else:
                 print("Selected user not found in the database.")
         else:
@@ -139,7 +163,7 @@ class RFIDManagementWindow(QMainWindow):
 
         # Đảm bảo bảng hiển thị đúng 3 cột
         self.user_table.setColumnCount(3)
-        self.user_table.setHorizontalHeaderLabels(["RFID Code", "Name", "License Plate"])
+        self.user_table.setHorizontalHeaderLabels(["Thẻ RFID", "Họ và Tên", "Biển số xe"])
 
         # Clear bảng hiển thị
         self.user_table.setRowCount(0)
@@ -156,8 +180,8 @@ class RFIDManagementWindow(QMainWindow):
         tickets = session.query(DailyCards).all()
 
         # Đảm bảo bảng hiển thị đúng 4 cột
-        self.user_table.setColumnCount(4)
-        self.user_table.setHorizontalHeaderLabels(["RFID", "License Plate", "Time In", "Time Out"])
+        self.user_table.setColumnCount(5)
+        self.user_table.setHorizontalHeaderLabels(["Thẻ RFID", "Biển số xe", "Thời gian vào", "Thời gian ra", "Thành tiền"])
 
         # Clear bảng hiển thị
         self.user_table.setRowCount(0)
@@ -171,10 +195,10 @@ class RFIDManagementWindow(QMainWindow):
                 self.user_table.setItem(row_idx, 1, QTableWidgetItem(ticket.bien_so_xe))
                 self.user_table.setItem(row_idx, 2, QTableWidgetItem(ticket.time_in.strftime('%Y-%m-%d %H:%M:%S')))
                 self.user_table.setItem(row_idx, 3, QTableWidgetItem(ticket.time_out.strftime('%Y-%m-%d %H:%M:%S') if ticket.time_out else ""))
+                self.user_table.setItem(row_idx, 4, QTableWidgetItem(str(ticket.tien) if ticket.tien else ""))
         else:
-            # Nếu không có vé ngày, vẫn giữ tiêu đề cột và một hàng trống
             self.user_table.setRowCount(1)
-            for col_idx in range(4):
+            for col_idx in range(5):
                 self.user_table.setItem(0, col_idx, QTableWidgetItem(""))
             print("No daily tickets found.")
 
@@ -187,7 +211,7 @@ class RFIDManagementWindow(QMainWindow):
 
         # Đảm bảo bảng có 2 cột
         self.user_table.setColumnCount(2)
-        self.user_table.setHorizontalHeaderLabels(["RFID Card", "Card Type"])
+        self.user_table.setHorizontalHeaderLabels(["Thẻ RFID", "Loại vé"])
 
         if rfids:
             self.user_table.setRowCount(len(rfids))
@@ -228,8 +252,9 @@ class RFIDManagementWindow(QMainWindow):
             return 
         
 class DailyTicketManager:
-    def __init__(self, session):
+    def __init__(self, session, user_table):
         self.session = session
+        self.user_table = user_table
     def add_daily_ticket(self, rfid_card, bien_so_xe, time_in=None):
         """Cập nhật thông tin vé ngày với biển số xe và thời gian vào."""
         if time_in is None:
@@ -255,6 +280,7 @@ class DailyTicketManager:
             self.session.add(new_ticket)
             self.session.commit()
             print(f"Added new daily ticket for RFID {rfid_card} with license plate {bien_so_xe}.")
+            self.list_daily_tickets()
             
         except Exception as e:
             self.session.rollback()
@@ -285,11 +311,16 @@ class DailyTicketManager:
             try:
                 self.session.commit()
                 print(f"Time out for RFID {rfid_card} (id={latest_ticket.id}) updated successfully.")
+                # Gọi hàm tính chi phí sau khi cập nhật time_out
+                fee = self.calculate_parking_fee(latest_ticket)
+                self.list_daily_tickets()
+                return fee
             except Exception as e:
                 self.session.rollback()
                 print(f"Error updating time out for RFID {rfid_card}: {e}")
         except Exception as e:
             print(f"Error processing RFID {rfid_card}: {e}")
+
 
     def update_time_in(self, rfid_card, time_in=None):
         """Cập nhật thời gian vào cho vé ngày."""
@@ -317,14 +348,15 @@ class DailyTicketManager:
         # Nếu có vé ngày, hiển thị thông tin lên bảng
         if tickets:
             self.user_table.setRowCount(len(tickets))
-            self.user_table.setColumnCount(4)  # Đảm bảo bảng có 4 cột
-            self.user_table.setHorizontalHeaderLabels(["RFID", "License Plate", "Time In", "Time Out"])
+            self.user_table.setColumnCount(5)  # Đảm bảo bảng có 4 cột
+            self.user_table.setHorizontalHeaderLabels(["Thẻ RFID", "Biển số xe", "Thời gian vào", "Thời gian ra", "Thành tiền"])
 
             for row_idx, ticket in enumerate(tickets):
                 self.user_table.setItem(row_idx, 0, QTableWidgetItem(ticket.rfid_card))
                 self.user_table.setItem(row_idx, 1, QTableWidgetItem(ticket.bien_so_xe))
                 self.user_table.setItem(row_idx, 2, QTableWidgetItem(ticket.time_in.strftime('%Y-%m-%d %H:%M:%S')))
                 self.user_table.setItem(row_idx, 3, QTableWidgetItem(ticket.time_out.strftime('%Y-%m-%d %H:%M:%S') if ticket.time_out else ""))
+                self.user_table.setItem(row_idx, 4, QTableWidgetItem(str(ticket.tien) if ticket.tien else ""))
         else:
             print("No daily tickets found.")
 
@@ -351,9 +383,102 @@ class DailyTicketManager:
                     time_in=current_time
                 )
                 print("done add card daily")
+                self.list_daily_tickets()
 
         except Exception as e:
             print(f"Error handling RFID message: {e}")
+
+    def calculate_parking_fee(self, ticket):
+        """
+        Tính chi phí gửi xe dựa trên thời gian vào và ra.
+        Args:
+            ticket (DailyCards): Thông tin vé ngày.
+        """
+        if ticket.time_in and ticket.time_out:
+            try:
+                # Gọi hàm calculate_fee để tính phí
+                fee = self.calculate_fee(ticket.time_in, ticket.time_out)
+                
+                # Cập nhật chi phí vào cột `tien`
+                ticket.tien = fee
+                self.session.commit()
+                print(f"Parking fee calculated: {fee} VND for ticket ID {ticket.id}.")
+                return fee
+            except ValueError as e:
+                print(f"Error calculating fee: {e}")
+            except Exception as e:
+                self.session.rollback()
+                print(f"Error updating parking fee for ticket ID {ticket.id}: {e}")
+        else:
+            print(f"Cannot calculate fee. Missing time_in or time_out for ticket ID {ticket.id}.")
+
+    def calculate_fee(self, entry_time, exit_time):
+        """
+        Tính phí gửi xe dựa trên thời gian vào và ra, với phí tối đa mỗi ngày là 12.000đ
+        Một ngày được tính từ 6h sáng đến 6h sáng hôm sau
+        
+        Args:
+            entry_time (datetime): Thời gian vào
+            exit_time (datetime): Thời gian ra
+            
+        Returns:
+            int: Số tiền phải trả (VND)
+        """
+        if exit_time < entry_time:
+            raise ValueError("Thời gian ra phải sau thời gian vào")
+        
+        def get_day_start(dt):
+            """Trả về thời điểm 6h sáng của ngày tính phí chứa dt"""
+            if dt.hour < 6:
+                return (dt - timedelta(days=1)).replace(hour=6, minute=0, second=0, microsecond=0)
+            return dt.replace(hour=6, minute=0, second=0, microsecond=0)
+        
+        total_fee = 0
+        current_time = entry_time
+        daily_fee = 0
+        current_day_start = get_day_start(entry_time)
+        next_day_start = current_day_start + timedelta(days=1)
+        
+        while current_time < exit_time:
+            # Kiểm tra nếu đã sang ngày mới (sau 6h sáng)
+            if current_time >= next_day_start:
+                # Cập nhật tổng phí với phí của ngày trước (tối đa 12.000đ)
+                total_fee += min(daily_fee, 12000)
+                daily_fee = 0
+                current_day_start = next_day_start
+                next_day_start = current_day_start + timedelta(days=1)
+            
+            # Lấy thời điểm kết thúc của khoảng thời gian hiện tại
+            if current_time.hour < 6:
+                # Đang trong khung đêm, tính đến 6h sáng
+                period_end = current_time.replace(hour=6, minute=0, second=0, microsecond=0)
+                if period_end > exit_time:
+                    period_end = exit_time
+                fee_rate = 10000  # Phí ban đêm
+            elif current_time.hour < 18:
+                # Đang trong khung ngày, tính đến 18h
+                period_end = current_time.replace(hour=18, minute=0, second=0, microsecond=0)
+                if period_end > exit_time:
+                    period_end = exit_time
+                fee_rate = 5000  # Phí ban ngày
+            else:
+                # Đang trong khung đêm, tính đến 6h sáng hôm sau
+                period_end = (current_time + timedelta(days=1)).replace(hour=6, minute=0, second=0, microsecond=0)
+                if period_end > exit_time:
+                    period_end = exit_time
+                fee_rate = 10000  # Phí ban đêm
+            
+            # Cộng phí vào phí ngày hiện tại
+            daily_fee += fee_rate
+            
+            # Chuyển sang khoảng thời gian tiếp theo
+            current_time = period_end
+        
+        # Thêm phí của ngày cuối cùng (tối đa 12.000đ)
+        total_fee += min(daily_fee, 12000)
+        
+        return total_fee
+
 
 
 

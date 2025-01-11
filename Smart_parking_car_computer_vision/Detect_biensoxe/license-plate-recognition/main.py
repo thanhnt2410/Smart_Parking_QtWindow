@@ -2,8 +2,8 @@ import sys
 import os
 from multiprocessing import Queue, Process
 from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QPushButton, QGridLayout, QHBoxLayout, QTabWidget
-from PyQt6.QtGui import QPixmap, QImage, QPainter, QPen, QColor, QScreen
-from PyQt6.QtCore import QTimer, Qt, pyqtSignal
+from PyQt6.QtGui import QPixmap, QImage, QPainter, QPen, QColor, QScreen, QFont
+from PyQt6.QtCore import QTimer, Qt, pyqtSignal, QTime
 import cv2
 import random
 from rfid_management import RFIDManagementWindow
@@ -39,13 +39,13 @@ class ParkingApp(QMainWindow):
         self.webcam = image
         self.detector = image
 
-        self.setWindowTitle("Parking Management System")
+        self.setWindowTitle("Hệ thống quản lý bãi đỗ xe")
         # self.setGeometry(100, 100, 1920, 1080)
 
         # Lấy kích thước màn hình
-        screen = QApplication.primaryScreen()  # Lấy màn hình chính
-        screen_geometry = screen.geometry()
-        self.setGeometry(0, 0, screen_geometry.width(), screen_geometry.height())
+        # screen = QApplication.primaryScreen()  # Lấy màn hình chính
+        # screen_geometry = screen.geometry()
+        self.setGeometry(100, 100, 1920, 1080)
 
         self.central_widget = QTabWidget()  # Đổi từ QWidget sang QTabWidget
         self.setCentralWidget(self.central_widget)
@@ -55,7 +55,12 @@ class ParkingApp(QMainWindow):
         # Create camera and parking layout tab
         self.parking_tab = QWidget()
         self.init_parking_tab()
-        self.central_widget.addTab(self.parking_tab, "Parking Management")
+        self.central_widget.addTab(self.parking_tab, "Quản lý")
+
+        # Thiết lập timer cập nhật đồng hồ
+        self.clock_timer = QTimer(self)
+        self.clock_timer.timeout.connect(self.update_clock)
+        self.clock_timer.start(1000)  # Cập nhật mỗi giây
 
         # Add RevenueManagementTab
         self.revenue_tab = DoanhThu()
@@ -84,121 +89,235 @@ class ParkingApp(QMainWindow):
         self.reset_rfid_in_signal.connect(lambda: self.clear_timer_in.start(3000))
         self.reset_rfid_out_signal.connect(lambda: self.clear_timer_out.start(3000))
 
+#     def init_parking_tab(self):
+#         self.parking_tab_layout = QVBoxLayout(self.parking_tab)
+
+#         # Create main layout for camera and exit frame
+#         self.main_layout = QHBoxLayout()
+
+#         # Camera Display with buttons below
+#         self.camera_layout = QVBoxLayout()
+
+#         # Camera display (ALWAYS at the top)
+#         self.camera_label = QLabel("Camera Feed")
+#         self.camera_label.setFixedSize(800, 600)  # Set fixed size for camera
+#         self.camera_layout.addWidget(self.camera_label, alignment=Qt.AlignmentFlag.AlignTop)
+
+#         # Buttons below camera
+#         self.button_layout = QHBoxLayout()
+#         self.open_door_in_button = QPushButton("Mở Bariel vào")
+#         self.open_door_in_button.setFixedSize(150, 40)
+#         self.open_door_in_button.clicked.connect(self.open_door_in)
+#         self.button_layout.addWidget(self.open_door_in_button)
+
+#         self.open_door_out_button = QPushButton("Mở Bariel ra")
+#         self.open_door_out_button.setFixedSize(150, 40)
+#         self.open_door_out_button.clicked.connect(self.open_door_out)
+#         self.button_layout.addWidget(self.open_door_out_button)
+
+#         # Add buttons layout below camera
+#         self.camera_layout.addLayout(self.button_layout)
+
+#         # Add camera layout to the main layout
+#         self.main_layout.addLayout(self.camera_layout)
+
+#         # Right side: Exit frame display
+#         self.exit_layout = QVBoxLayout()
+#         self.exit_frame_label = QLabel("Exit Frame")
+#         self.exit_frame_label.setFixedSize(800, 600)
+#         self.exit_layout.addWidget(self.exit_frame_label)
+
+#         # Add fee information label
+#         self.fee_label = QLabel("")
+#         self.fee_label.setStyleSheet("font-size: 38px; color: white;")
+#         self.fee_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+#         self.exit_layout.addWidget(self.fee_label)
+
+#         self.main_layout.addLayout(self.exit_layout)
+
+#         # Add the main layout (camera + exit frame) to the parking tab layout
+#         self.parking_tab_layout.addLayout(self.main_layout)
+
+#         # Add clock above the main layout
+#         self.clock_label = QLabel()
+#         self.clock_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+#         self.clock_label.setFont(QFont('Arial', 30))
+#         self.update_clock()
+#         self.parking_tab_layout.insertWidget(0, self.clock_label)  # Clock stays at the top
+
+#         # Timer for updating camera feed
+#         self.timer = QTimer(self)
+#         self.timer.timeout.connect(self.update_camera)
+#         self.cap = cv2.VideoCapture(0)
+#         self.timer.start(30)
+
+#         # License Plate Display
+#         self.plate_label = QLabel("Biển số xe: None")
+#         self.plate_label.setStyleSheet("font-size: 16px; color: white;")
+#         self.parking_tab_layout.addWidget(self.plate_label)
+
+#         # Save Image Button
+#         self.save_image_button = QPushButton("Lưu ảnh biển số xe")
+#         self.save_image_button.clicked.connect(self.save_plate_image)
+#         self.parking_tab_layout.addWidget(self.save_image_button)
+
+#         # Parking Status Grid
+#         self.grid_layout = QGridLayout()
+#         self.parking_tab_layout.addLayout(self.grid_layout)
+
+#         # Initialize parking spots
+#         self.rfid_esp32_in = None
+#         self.rfid_esp32_out = None
+#         self.last_sent_rfid = None
+#         self.last_sent_time = None
+
+#         for i in range(2):
+#             for j in range(3):
+#                 spot_index = i * 3 + j + 1
+#                 slot_name_label = QLabel(f"Slot {spot_index}")
+#                 slot_name_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+#                 slot_name_label.setStyleSheet("font-size: 14px; font-weight: bold; margin-right: 5px;")
+
+#                 spot_label = QLabel()
+#                 spot_label.setFixedSize(100, 100)
+#                 spot_label.setStyleSheet("border: 1px solid black; background-color: green;")
+
+#                 container_widget = QWidget()
+#                 container_layout = QHBoxLayout(container_widget)
+#                 container_layout.addWidget(slot_name_label)
+#                 container_layout.addWidget(spot_label)
+
+#                 self.grid_layout.addWidget(container_widget, i, j)
+#                 self.parking_spots.append(spot_label)
+
+#         # RFID Management Window Button
+#         self.rfid_window = RFIDManagementWindow()
+#         self.rfid_button = QPushButton("Quản lý thẻ RFID")
+#         self.rfid_button.clicked.connect(self.open_rfid_window)
+#         self.parking_tab_layout.addWidget(self.rfid_button)
     def init_parking_tab(self):
-        # self.parking_tab_layout = QVBoxLayout(self.parking_tab)
-
-        # # Camera Display
-        # self.camera_label = QLabel("Camera Feed")
-        # self.camera_label.setFixedSize(640, 480)
-        # self.parking_tab_layout.addWidget(self.camera_label)
-        # # Đảm bảo căn giữa layout trong tab
-        # # self.parking_tab_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        # # Create horizontal layout for buttons and camera
-        # self.controls_layout = QHBoxLayout()
-        
-        # # Open door in button
-        # self.open_door_in_button = QPushButton("Open Door In")
-        # self.open_door_in_button.clicked.connect(self.open_door_in)
-        # self.controls_layout.addWidget(self.open_door_in_button)
-
-        # # Open door out button
-        # self.open_door_out_button = QPushButton("Open Door Out")
-        # self.open_door_out_button.clicked.connect(self.open_door_out)
-        # self.controls_layout.addWidget(self.open_door_out_button)
-
-        # # Add the camera and control buttons to the main layout
-        # self.parking_tab_layout.addLayout(self.controls_layout)
+        # Main vertical layout for the entire tab
         self.parking_tab_layout = QVBoxLayout(self.parking_tab)
+        
+        # Add clock at the very top
+        self.clock_label = QLabel()
+        self.clock_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.clock_label.setFont(QFont('Arial', 30))
+        self.update_clock()
+        self.parking_tab_layout.addWidget(self.clock_label)
 
-        # Create horizontal layout for camera and control buttons
+        # Create horizontal layout for cameras and controls
         self.main_layout = QHBoxLayout()
 
-        # Camera Display (increase size)
+        # Left side: Camera section
+        self.left_section = QVBoxLayout()
+        
+        # Camera display at the top
         self.camera_label = QLabel("Camera Feed")
-        self.camera_label.setFixedSize(800, 600)  # Increase the size of the camera display
-        self.main_layout.addWidget(self.camera_label)
-
-        # Create another layout for control buttons (Open Door In and Open Door Out)
-        self.controls_layout = QVBoxLayout()
-
-        # Open door in button (resize it)
-        self.open_door_in_button = QPushButton("Open Door In")
-        self.open_door_in_button.setFixedSize(150, 40)  # Set smaller size for the button
+        self.camera_label.setFixedSize(800, 600)
+        self.left_section.addWidget(self.camera_label, 0, Qt.AlignmentFlag.AlignTop)
+        
+        # Button layout below camera
+        self.button_layout = QHBoxLayout()
+        
+        # Door control buttons
+        self.open_door_in_button = QPushButton("Mở Bariel vào")
+        self.open_door_in_button.setFixedSize(150, 40)
         self.open_door_in_button.clicked.connect(self.open_door_in)
-        self.controls_layout.addWidget(self.open_door_in_button)
+        self.button_layout.addWidget(self.open_door_in_button)
 
-        # Open door out button (resize it)
-        self.open_door_out_button = QPushButton("Open Door Out")
-        self.open_door_out_button.setFixedSize(150, 40)  # Set smaller size for the button
+        self.open_door_out_button = QPushButton("Mở Bariel ra")
+        self.open_door_out_button.setFixedSize(150, 40)
         self.open_door_out_button.clicked.connect(self.open_door_out)
-        self.controls_layout.addWidget(self.open_door_out_button)
+        self.button_layout.addWidget(self.open_door_out_button)
 
-        # Add the control buttons layout to the main layout
-        self.main_layout.addLayout(self.controls_layout)
+        # Add button layout to left section
+        self.left_section.addLayout(self.button_layout)
+        
+        # Add stretch to push everything up
+        self.left_section.addStretch()
 
-        # Add the main layout (camera + buttons) to the parking tab layout
+        # Right side: Exit frame section
+        self.right_section = QVBoxLayout()
+        
+        # Exit frame display
+        self.exit_frame_label = QLabel("Exit Frame")
+        self.exit_frame_label.setFixedSize(800, 600)
+        self.right_section.addWidget(self.exit_frame_label, 0, Qt.AlignmentFlag.AlignTop)
+        
+        # Fee information label
+        self.fee_label = QLabel("")
+        self.fee_label.setStyleSheet("font-size: 38px; color: white;")
+        self.fee_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.right_section.addWidget(self.fee_label)
+        
+        # Add stretch to push everything up
+        self.right_section.addStretch()
+
+        # Add left and right sections to main layout
+        self.main_layout.addLayout(self.left_section)
+        self.main_layout.addLayout(self.right_section)
+
+        # Add main layout to parking tab layout
         self.parking_tab_layout.addLayout(self.main_layout)
 
         # Timer for updating camera feed
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_camera)
-        self.cap = cv2.VideoCapture(0)  # Access default camera
+        self.cap = cv2.VideoCapture(0)
         self.timer.start(30)
 
-        # License Plate Display (Thêm QLabel để hiển thị biển số)
-        self.plate_label = QLabel("Detected License Plate: None")
+        # License plate section
+        self.plate_label = QLabel("Biển số xe: None")
         self.plate_label.setStyleSheet("font-size: 16px; color: white;")
         self.parking_tab_layout.addWidget(self.plate_label)
 
-        # Save Image Button
-        self.save_image_button = QPushButton("Save Detected Plate Image")
+        # Save image button
+        self.save_image_button = QPushButton("Lưu ảnh biển số xe")
         self.save_image_button.clicked.connect(self.save_plate_image)
         self.parking_tab_layout.addWidget(self.save_image_button)
 
-        # Parking Status Grid
+        # Parking status grid
         self.grid_layout = QGridLayout()
         self.parking_tab_layout.addLayout(self.grid_layout)
-        
-        #Khoi tao bien nhan gia tri rfid tu esp32
+
+        # Initialize parking spots
         self.rfid_esp32_in = None
         self.rfid_esp32_out = None
-
-        # Khởi tạo biến để lưu RFID đã gửi
         self.last_sent_rfid = None
         self.last_sent_time = None
 
-        for i in range(2):  # Hai hàng
-            for j in range(3):  # Ba cột
-                spot_index = i * 3 + j + 1  # Tính chỉ số slot (1 đến 6)
-
-                # Tạo QLabel để hiển thị tên slot
-                slot_name_label = QLabel(f"Slot {spot_index}")
+        # Create parking spots grid
+        for i in range(2):
+            for j in range(3):
+                spot_index = i * 3 + j + 1
+                slot_name_label = QLabel(f"Vị trí {spot_index}")
                 slot_name_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
                 slot_name_label.setStyleSheet("font-size: 14px; font-weight: bold; margin-right: 5px;")
 
-                # Tạo QLabel để hiển thị trạng thái slot
                 spot_label = QLabel()
-                spot_label.setFixedSize(100, 100)
+                spot_label.setFixedSize(80, 80)
                 spot_label.setStyleSheet("border: 1px solid black; background-color: green;")
 
-                # Tạo một widget container
                 container_widget = QWidget()
                 container_layout = QHBoxLayout(container_widget)
                 container_layout.addWidget(slot_name_label)
                 container_layout.addWidget(spot_label)
 
-                # Thêm widget container vào lưới
                 self.grid_layout.addWidget(container_widget, i, j)
-
-                # Lưu trạng thái của slot vào danh sách
                 self.parking_spots.append(spot_label)
 
-        # RFID Management Window Button
+        # RFID management button
         self.rfid_window = RFIDManagementWindow()
-        self.rfid_button = QPushButton("Manage Monthly Parking Cards")
+        self.rfid_button = QPushButton("Quản lý thẻ RFID")
         self.rfid_button.clicked.connect(self.open_rfid_window)
         self.parking_tab_layout.addWidget(self.rfid_button)
+
+
+
+    def update_clock(self):
+        current_time = QTime.currentTime().toString('hh:mm:ss')
+        self.clock_label.setText(current_time)
         
 
     def update_camera(self):
@@ -222,7 +341,7 @@ class ParkingApp(QMainWindow):
 
         # Hiển thị biển số (nếu có)
         if lp and lp != "unknown":
-            self.plate_label.setText(f"Detected License Plate: {lp}")
+            self.plate_label.setText(f"Biển số xe nhận diện: {lp}")
             # Kiểm tra nếu RFID đã gửi và nếu chưa đủ 3 giây
             current_time = time.time()  # Lấy thời gian hiện tại (giây)
              # Nếu RFID đã được gửi và chưa đủ 3 giây
@@ -239,7 +358,7 @@ class ParkingApp(QMainWindow):
                 self.last_sent_rfid = lp
                 self.last_sent_time = current_time  # Lưu thời gian gửi
 
-            if(rfid_day):
+            elif(rfid_day):
                 print(f"RFID for {lp}: {rfid_day}")
                 self.mqtt_handler.client.publish("esp32/rfid_day", rfid_day)
                 
@@ -248,13 +367,27 @@ class ParkingApp(QMainWindow):
                 self.last_sent_time = current_time  # Lưu thời gian gửi
             # else:
                 if self.rfid_esp32_out != None:
-                    self.rfid_window.daily_ticket_manager.update_time_out(self.rfid_esp32_out, lp)
+                    so_tien = self.rfid_window.daily_ticket_manager.update_time_out(self.rfid_esp32_out, lp)
+                    # Hiển thị frame hiện tại trong exit_frame_label
+                    exit_frame = frame.copy()
+                    rgb_exit_frame = cv2.cvtColor(exit_frame, cv2.COLOR_BGR2RGB)
+                    h, w, ch = rgb_exit_frame.shape
+                    bytes_per_line = ch * w
+                    exit_qt_image = QPixmap.fromImage(QImage(rgb_exit_frame.data, w, h, bytes_per_line, QImage.Format.Format_RGB888))
+                    self.exit_frame_label.setPixmap(exit_qt_image)
+                    
+                    # Cập nhật text hiển thị biển số và số tiền
+                    self.fee_label.setText(f"Xe {lp} ra: {so_tien} VND ")
+
             else:
                 if self.rfid_esp32_in != None:
                     self.rfid_window.daily_ticket_manager.handle_rfid_message(self.rfid_esp32_in, lp)
+                    # Cập nhật text hiển thị biển số và số tiền
+                    self.fee_label.setText(f"Xe {lp} vào")
+
             
         else:
-            self.plate_label.setText("Detected License Plate: None")
+            self.plate_label.setText("Biển số xe nhận diện: Không")
     def save_plate_image(self):
         # Đường dẫn tới thư mục lưu ảnh
         directory = "images"
@@ -343,6 +476,12 @@ class ParkingApp(QMainWindow):
         """Publish a value of 1 to the 'esp32/open_door_out' topic."""
         print("Opening door out...")
         self.mqtt_handler.client.publish("esp32/open_door_out", 1)
+        # Clear the exit frame
+        empty_pixmap = QPixmap()
+        self.exit_frame_label.setPixmap(empty_pixmap)
+        
+        # Clear any text in the fee label
+        self.fee_label.setText("")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
